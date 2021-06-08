@@ -1,0 +1,112 @@
+schema {
+  query: Query
+  mutation: Mutation
+}
+
+type Post {
+  id: ID!
+  title: String!
+  content: String
+  user: User!
+  created: String!
+}
+
+type Comment {
+  id: ID!
+  content: String!
+  user: User!
+  post: Post!
+  created: String!
+}
+
+type User {
+  id: ID!
+  mail: String!
+  name: String!
+  password: String!
+  profile_picture: String
+}
+
+type UserResponse {
+  success: Boolean!
+  error: String
+  data: User
+}
+
+type UsersResponse {
+  success: Boolean!
+  error: String
+  total: Int
+  data: [User]
+}
+
+type PostResponse {
+  success: Boolean!
+  error: String
+  data: Post
+}
+
+type PostsResponse {
+  success: Boolean!
+  error: String
+  total: Int
+  data: [Post]
+}
+
+type CommentResponse {
+  success: Boolean!
+  error: String
+  data: Comment
+}
+
+type CommentsResponse {
+  success: Boolean!
+  error: String
+  data: [Comment]
+}
+
+type CreatedResponse {
+  success: Boolean!
+  error: String!
+  id: ID
+}
+
+type UpdatedResponse {
+  success: Boolean!
+  error: String
+}
+
+type DeletedResponse {
+  success: Boolean!
+  error: String
+}
+
+type Query {
+  get_user(id: ID, mail: String): UserResponse
+  get_users(name: String): UsersResponse
+
+  get_post(id: ID!): PostResponse
+  get_posts_by_uid(uid: ID): PostsResponse
+  get_latest_posts: PostsResponse
+
+  get_comment(id: ID!): CommentResponse
+  get_comments(pid: ID!): CommentsResponse
+}
+
+type Mutation {
+  create_post(title: String!, content: String, uid: ID!): CreatedResponse
+  create_comment(content: String!, uid: ID!, pid: ID!): CreatedResponse
+
+  update_user(
+    id: ID
+    name: String
+    mail: String
+    password: String
+    profile_picture: String
+  ): UpdatedResponse
+  update_post(id: ID, title: String, content: String): UpdatedResponse
+
+  delete_user(id: ID!): DeletedResponse
+  delete_post(id: ID!): DeletedResponse
+  delete_comment(id: ID!): DeletedResponse
+}
