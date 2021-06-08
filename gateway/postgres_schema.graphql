@@ -98,13 +98,14 @@ type Mutation {
   create_comment(content: String!, uid: ID!, pid: ID!): CreatedResponse
 
   update_user(
-    id: ID
+    id: ID!
     name: String
     mail: String
     password: String
     profile_picture: String
   ): UpdatedResponse
-  update_post(id: ID, title: String, content: String): UpdatedResponse
+  update_post(id: ID!, title: String, content: String): UpdatedResponse
+  update_comment(id: ID!, content: String!): UpdatedResponse
 
   delete_user(id: ID!): DeletedResponse
   delete_post(id: ID!): DeletedResponse
