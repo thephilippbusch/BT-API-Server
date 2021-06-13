@@ -15,9 +15,16 @@ class PostManager:
             cur.execute(query)
             data = cur.fetchone()
             if data is not None:
+                post = dict(data)
+                user_query = (f"""
+                    SELECT * FROM users WHERE id = '{post["uid"]}';
+                """)
+                cur.execute(user_query)
+                user_res = cur.fetchone()
+                post["user"] = dict(user_res)
                 return {
                     'success': True,
-                    'data': dict(data)
+                    'data': post
                 }
             return {
                 'success': False,
@@ -42,7 +49,15 @@ class PostManager:
             cur.execute(query)
             res = cur.fetchall()
             for row in res:
-                data.append(dict(row))
+                post = dict(row)
+                user_query = (f"""
+                    SELECT * FROM users WHERE id = '{post["uid"]}';
+                """)
+                cur.execute(user_query)
+                user_res = cur.fetchone()
+                print(user_res)
+                post["user"] = dict(user_res)
+                data.append(post)
             return {
                 'success': True,
                 'total': len(data),
@@ -64,7 +79,14 @@ class PostManager:
             cur.execute(query)
             res = cur.fetchall()
             for row in res:
-                data.append(dict(row))
+                post = dict(row)
+                user_query = (f"""
+                    SELECT * FROM users WHERE id = '{post["uid"]}';
+                """)
+                cur.execute(user_query)
+                user_res = cur.fetchone()
+                post["user"] = dict(user_res)
+                data.append(post)
             return {
                 'success': True,
                 'total': len(data),
@@ -89,9 +111,21 @@ class PostManager:
 
             cur.execute(req)
             conn.commit()
+
+            user_req = (f"""
+                SELECT * FROM users WHERE id = '{user}';
+            """)
+            cur.execute(user_req)
+            user_object = cur.fetchone()
             return {
                 'success': True,
-                'id': id
+                'data': {
+                    "id": id,
+                    "title": title,
+                    "content": content,
+                    "created": created,
+                    "user": dict(user_object),
+                }
             }
         except Exception as e:
             print(e)

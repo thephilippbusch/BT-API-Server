@@ -5,7 +5,9 @@ from decouple import config
 import requests
 
 POSTGRES_URL = config("postgres_url")
+ELASTIC_URL = config("elastic_url")
 POSTGRES_TOKEN = config("postgres_token")
+PUBLIC_KEY = config("public_key")
 
 postgres_header = {"token": POSTGRES_TOKEN}
 
@@ -13,8 +15,7 @@ class PostQueries:
     def get_post(obj, info, id: str):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            is_valid = JWTBearer.verify_jwt(JWTBearer, token)
-            if is_valid:
+            if token == PUBLIC_KEY:
                 req_url = f"{POSTGRES_URL}posts/get_post?id={id}"
                 res = requests.get(req_url, headers=postgres_header)
                 data = res.json()
@@ -22,7 +23,7 @@ class PostQueries:
                 return data
             return {
                 "success": False,
-                "error": "Invalid authentication"
+                "error": "Invalid api key"
             }
         except Exception as e:
             print(e)
@@ -34,8 +35,7 @@ class PostQueries:
     def get_posts_by_uid(obj, info, uid: str):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            is_valid = JWTBearer.verify_jwt(JWTBearer, token)
-            if is_valid:
+            if token == PUBLIC_KEY:
                 req_url = f"{POSTGRES_URL}posts/get_posts?uid={uid}"
                 res = requests.get(req_url, headers=postgres_header)
                 data = res.json()
@@ -45,7 +45,7 @@ class PostQueries:
                 return data
             return {
                 "success": False,
-                "error": "Invalid authentication token"
+                "error": "Invalid api key"
             }
         except Exception as e:
             print(e)
@@ -57,8 +57,7 @@ class PostQueries:
     def get_latest_posts(obj, info):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            is_valid = JWTBearer.verify_jwt(JWTBearer, token)
-            if is_valid:
+            if token == PUBLIC_KEY:
                 req_url = f"{POSTGRES_URL}posts/get_latest_posts"
                 res = requests.get(req_url, headers=postgres_header)
                 data = res.json()
@@ -66,7 +65,7 @@ class PostQueries:
                 return data
             return {
                 "success": False,
-                "error": "Invalid authentication token"
+                "error": "Invalid api key"
             }
         except Exception as e:
             print(e)
@@ -92,7 +91,25 @@ class PostMutations:
                 res = requests.post(req_url, params=payload, headers=postgres_header)
                 data = res.json()
 
-                return data
+                elasticsearch_url = f"{ELASTIC_URL}insert_post"
+                if data["success"]:
+                    post = data["data"]
+                    user = post["user"]
+                    payload = {
+                        "id": post["id"],
+                        "title": post["title"],
+                        "content": post["content"],
+                        "created": post["created"],
+                        "user": user
+                    }
+                    print(payload)
+                    elastic_res = requests.post(elasticsearch_url, json=payload)
+                    print(elastic_res)
+
+                return {
+                    "success": True,
+                    "id": data["data"]["id"]
+                }
             return {
                 "success": False,
                 "error": "Invalid authentication"

@@ -5,6 +5,7 @@ import requests
 
 POSTGRES_URL = config("postgres_url")
 POSTGRES_TOKEN = config("postgres_token")
+PUBLIC_KEY = config("public_key")
 
 postgres_header = {"token": POSTGRES_TOKEN}
 
@@ -12,8 +13,9 @@ class UserQueries:
     def get_user(obj, info, id: str = None, mail: str = None):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            is_valid = JWTBearer.verify_jwt(JWTBearer, token)
-            if is_valid:
+            print(token)
+            print(PUBLIC_KEY)
+            if token == PUBLIC_KEY:
                 if id is not None:
                     req_url = f"{POSTGRES_URL}users/get_user?id={id}"
                 else:
@@ -24,7 +26,7 @@ class UserQueries:
                 return data
             return {
                 "success": False,
-                "error": "Invalid authentication token"
+                "error": "Invalid api key"
             }
         except Exception as e:
             print(f"queries-25: {e}")
@@ -36,8 +38,7 @@ class UserQueries:
     def get_users(obj, info, name: str = None):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            is_valid = JWTBearer.verify_jwt(JWTBearer, token)
-            if is_valid:
+            if token == PUBLIC_KEY:
                 req_url = f"{POSTGRES_URL}users/get_users"
                 if name is not None:
                     req_url = f"{POSTGRES_URL}users/get_users?name={name}"
@@ -48,7 +49,7 @@ class UserQueries:
                 return data
             return {
                 "success": False,
-                "error": "Invalid authentication token"
+                "error": "Invalid api key"
             }
         except Exception as e:
             print(e)

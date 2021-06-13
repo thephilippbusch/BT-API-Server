@@ -2,44 +2,63 @@ import { useState, useEffect } from 'react'
 
 import Post from '../pages/post'
 import { Spinner } from '../components/loader'
+import { sendGraphql } from '../requests'
+
+const PUBLIC_API_KEY = process.env.REACT_APP_PUBLIC_GATEWAY_KEY
 
 const LoadPost = ({ match }) => {
   const [data, setData] = useState({ fetched: null, isFetching: false })
 
   useEffect(() => {
-    const fetchData = async () => {
+    const fetchData = async (id) => {
       setData({ fetched: null, isFetching: true })
       try {
-        const response = await fetch('')
-        const result = await response.json()
-        if (result) {
-          if (result.status_code === 200) {
-            setData({ fetched: result.data, isFetching: false })
+        const query = `query getPost($id: ID!) {
+          get_post(id: $id) {
+            success
+            error
+            data {
+              id
+              title
+              content
+              created
+              user {
+                id
+                name
+                profile_picture
+              }
+            }
           }
-          if (result.status_code === 400) {
-            setData({ fetched: result.message, isFetching: false })
-          }
+        }`
+        const response = await sendGraphql(
+          { query, variables: { id } },
+          PUBLIC_API_KEY
+        )
+        if (!response) {
+          setData({ fetched: null, isFetching: false })
+          return
         }
+        let result = response.data.get_post
+        if (!result.success) {
+          setData({ fetched: null, isFetching: false })
+          return
+        }
+        setData({ fetched: result.data, isFetching: false })
       } catch (e) {
         console.error(e)
-        let error = {
-          status_code: 400,
-          status: 'Error',
-          message: `${e}`,
-        }
-        setData({ fetched: error, isFetching: false })
+        setData({ fetched: null, isFetching: false })
       }
     }
-    console.log(match.params)
-    // fetchData()
-  })
+    fetchData(match.params.pid)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-  //   return data.fetched && !data.isFetching ? (
-  //     <Post data={data.fetched} />
-  //   ) : (
-  //     <Spinner />
-  //   )
-  return <Post />
+  return data.fetched && !data.isFetching ? (
+    <Post data={data.fetched} />
+  ) : (
+    <div className="w-full flex justify-center pt-40">
+      <Spinner />
+    </div>
+  )
 }
 
 export default LoadPost

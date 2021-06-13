@@ -5,3 +5,11 @@
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
 }
+
+.header {
+  height: 8vh;
+}
+
+.body {
+  height: 92vh;
+}

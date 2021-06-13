@@ -15,9 +15,24 @@ class CommentManager:
             cur.execute(query)
             data = cur.fetchone()
             if data is not None:
+                comment = dict(data)
+                user_query = (f"""
+                    SELECT * FROM users WHERE id = '{comment["uid"]}';
+                """)
+                cur.execute(user_query)
+                user_res = cur.fetchone()
+                comment["user"] = dict(user_res)
+
+                post_query = (f"""
+                    SELECT * FROM posts WHERE id = '{comment["pid"]}';
+                """)
+                cur.execute(post_query)
+                post_res = cur.fetchone()
+                comment["post"] = dict(post_res)
+
                 return {
                     'success': True,
-                    'data': dict(data)
+                    'data': comment
                 }
             return {
                 'success': False,
@@ -39,8 +54,24 @@ class CommentManager:
             """)
             cur.execute(query)
             res = cur.fetchall()
+            print(res)
             for row in res:
-                data.append(dict(row))
+                comment = dict(row)
+                print(comment)
+                user_query = (f"""
+                    SELECT * FROM users WHERE id = '{comment["uid"]}';
+                """)
+                cur.execute(user_query)
+                user_res = cur.fetchone()
+                comment["user"] = dict(user_res)
+
+                post_query = (f"""
+                    SELECT * FROM posts WHERE id = '{comment["pid"]}';
+                """)
+                cur.execute(post_query)
+                post_res = cur.fetchone()
+                comment["post"] = dict(post_res)
+                data.append(comment)
             return {
                 'success': True,
                 'total': len(data),
@@ -79,7 +110,7 @@ class CommentManager:
     def update_comment(id: str, content: str):
         try:
             check_id = (f"""
-                SELECT * FROM comments WHERE id = {id}
+                SELECT * FROM comments WHERE id = '{id}';
             """)
             cur.execute(check_id)
             id_exists = cur.fetchall()

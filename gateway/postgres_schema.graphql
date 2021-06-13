@@ -67,7 +67,7 @@ type CommentsResponse {
 
 type CreatedResponse {
   success: Boolean!
-  error: String!
+  error: String
   id: ID
 }
 

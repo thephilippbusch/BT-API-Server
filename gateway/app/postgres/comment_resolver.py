@@ -5,6 +5,7 @@ import requests
 
 POSTGRES_URL = config("postgres_url")
 POSTGRES_TOKEN = config("postgres_token")
+PUBLIC_KEY = config("public_key")
 
 postgres_header = {"token": POSTGRES_TOKEN}
 
@@ -12,8 +13,7 @@ class CommentQueries:
     def get_comment(obj, info, id: str):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            is_valid = JWTBearer.verify_jwt(JWTBearer, token)
-            if is_valid:
+            if token == PUBLIC_KEY:
                 req_url = f"{POSTGRES_URL}comments/get_comment?id={id}"
                 res = requests.get(req_url, headers=postgres_header)
                 data = res.json()
@@ -21,7 +21,7 @@ class CommentQueries:
                 return data
             return {
                 "success": False,
-                "error": "Invalid authentication token"
+                "error": "Invalid api key"
             }
         except Exception as e:
             print(e)
@@ -33,8 +33,7 @@ class CommentQueries:
     def get_comments(obj, info, pid: str):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            is_valid = JWTBearer.verify_jwt(JWTBearer, token)
-            if is_valid:
+            if token == PUBLIC_KEY:
                 req_url = f"{POSTGRES_URL}comments/get_comments?pid={pid}"
                 res = requests.get(req_url, headers=postgres_header)
                 data = res.json()
@@ -42,7 +41,7 @@ class CommentQueries:
                 return data
             return {
                 "success": False,
-                "error": "Invalid authentication token"
+                "error": "Invalid api key"
             }
         except Exception as e:
             print(e)
