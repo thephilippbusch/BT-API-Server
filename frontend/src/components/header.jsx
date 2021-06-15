@@ -6,19 +6,40 @@ import icon from '../blogger-icon.png'
 import { useAuthContext, useCurrentUser } from '../context'
 import { sendGraphql } from '../requests'
 
-import { UserIcon } from '@heroicons/react/solid'
+import { SearchIcon, UserIcon } from '@heroicons/react/solid'
 import { LogoutIcon, AdjustmentsIcon } from '@heroicons/react/outline'
 import { Popover, Transition } from '@headlessui/react'
 import ProfilePicture from './profilePicture'
+import { useQuery } from '../context'
 
 const PUBLIC_API_KEY = process.env.REACT_APP_PUBLIC_GATEWAY_KEY
 
-const Header = () => {
+const Header = ({ data }) => {
+  const [query, setQuery] = useState('')
+  const [error, setError] = useState(false)
   const [profileURL, setProfileURL] = useState()
   let history = useHistory()
+  let url_query = useQuery()
 
   let { authToken, setAuthToken } = useAuthContext()
   let { currentUser, setCurrentUser } = useCurrentUser()
+
+  useEffect(() => {
+    if (url_query.get('query')) {
+      setQuery(url_query.get('query'))
+    }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  const logout = () => {
+    setAuthToken('')
+    setCurrentUser('')
+
+    history.push('/')
+  }
+
+  useEffect(() => {
+    setProfileURL(data)
+  }, [data])
 
   useEffect(() => {
     const fetchProfileURL = async (id) => {
@@ -42,7 +63,6 @@ const Header = () => {
         }
         const result = response.data.get_user
         if (!result.success) {
-          console.error(result.error)
           setProfileURL(null)
           return
         }
@@ -52,7 +72,6 @@ const Header = () => {
             : result.data.profile_picture
         )
       } catch (e) {
-        console.error(e)
         setProfileURL(null)
       }
     }
@@ -61,11 +80,15 @@ const Header = () => {
     }
   }, [currentUser])
 
-  const logout = () => {
-    setAuthToken('')
-    setCurrentUser('')
+  const submitQuery = () => {
+    if (query === '' || !query) {
+      setError(true)
+      return
+    }
+    let queryString = `/search?query=${query}`
+    setError(false)
 
-    history.push('/')
+    history.push(queryString)
   }
 
   const profileMenuItems = [
@@ -96,12 +119,39 @@ const Header = () => {
           Blogger
         </a>
       </div>
+
+      <div
+        className={`w-1/2 flex bg-white justify-between items-center py-1 px-2`}
+      >
+        <input
+          className={`w-full border-b ${
+            error ? 'border-red-500' : 'border-transparent'
+          } focus:outline-none`}
+          type="search"
+          placeholder="search..."
+          value={query}
+          onChange={({ target }) => setQuery(target.value)}
+        />
+        <button
+          className="flex p-2 items-center text-gray-600 hover:text-gray-800 focus:outline-none focus:text-black"
+          onClick={() => submitQuery()}
+        >
+          <SearchIcon className="h-4 w-4 mr-2" />
+          Search
+        </button>
+      </div>
+
       {authToken && currentUser ? (
         <Popover className="relative">
           {({ open }) => (
             <>
               <Popover.Button className="rounded-full h-full flex items-centermr-2 focus:outline-none border-transparent border-2 focus:border-gray-300">
-                <ProfilePicture src={profileURL} size="8" pad="3" />
+                <ProfilePicture
+                  url={profileURL}
+                  size="8"
+                  pad="4"
+                  picture="12"
+                />
               </Popover.Button>
 
               <Transition

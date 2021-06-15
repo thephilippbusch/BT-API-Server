@@ -37,14 +37,11 @@ class PostManager:
                 'error': str(e)
             }
 
-    def get_posts(uid: str = None):
+    def get_posts_by_uid(uid: str):
         try:
             data = []
-            query_string = ""
-            if uid is not None:
-                query_string = f"WHERE uid = '{uid}'"
             query = (f"""
-                SELECT * FROM posts {query_string};
+                SELECT * FROM posts WHERE uid = '{uid}' ORDER BY created DESC;
             """)
             cur.execute(query)
             res = cur.fetchall()

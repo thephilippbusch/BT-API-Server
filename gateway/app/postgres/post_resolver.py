@@ -36,8 +36,30 @@ class PostQueries:
         try:
             token = info.context["request"].headers["Authentication"][7:]
             if token == PUBLIC_KEY:
-                req_url = f"{POSTGRES_URL}posts/get_posts?uid={uid}"
+                req_url = f"{POSTGRES_URL}posts/get_posts_by_uid?uid={uid}"
                 res = requests.get(req_url, headers=postgres_header)
+                data = res.json()
+
+                print(data)
+
+                return data
+            return {
+                "success": False,
+                "error": "Invalid api key"
+            }
+        except Exception as e:
+            print(e)
+            return {
+                "success": False,
+                "error": str(e)
+            }
+
+    def get_posts_by_query(obj, info, query: str):
+        try:
+            token = info.context["request"].headers["Authentication"][7:]
+            if token == PUBLIC_KEY:
+                req_url = f"{ELASTIC_URL}get_posts_by_query?query={query}"
+                res = requests.get(req_url)
                 data = res.json()
 
                 print(data)

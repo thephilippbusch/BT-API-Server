@@ -26,6 +26,7 @@ const LoadHome = () => {
               user {
                 id
                 name
+                profile_picture
               }
             }
           }

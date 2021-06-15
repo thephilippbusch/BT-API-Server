@@ -20,15 +20,9 @@ class Post(BaseModel):
     created: str
     user: User
 
-@app.get("/test", tags=["Test"])
-async def get_test():
-    return {"message": "Hello, World"}
-
 @app.post("/insert_post", tags=["Elasticsearch"])
 async def insert_post(post: Post):
     try:
-        print(post)
-
         payload = {
             "id": post.id,
             "title": post.title,
@@ -48,11 +42,9 @@ async def insert_post(post: Post):
             body=payload
         )
 
-        print(res)
-
         return {
             "success": True,
-            "id": id
+            "id": post.id
         }
     except Exception as e:
         print(e)
@@ -61,7 +53,7 @@ async def insert_post(post: Post):
             "error": str(e)
         }
 
-@app.get("/get_post", tags=["Elasticsearch"])
+@app.get("/get_posts_by_query", tags=["Elasticsearch"])
 async def get_posts_by_query(query: str):
     try:
         post_list = []
@@ -76,6 +68,7 @@ async def get_posts_by_query(query: str):
                 }
             }
         )
+        print(res)
 
         if not res:
             return {

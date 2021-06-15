@@ -86,7 +86,8 @@ type Query {
   get_users(name: String): UsersResponse
 
   get_post(id: ID!): PostResponse
-  get_posts_by_uid(uid: ID): PostsResponse
+  get_posts_by_uid(uid: ID!): PostsResponse
+  get_posts_by_query(query: String!): PostsResponse
   get_latest_posts: PostsResponse
 
   get_comment(id: ID!): CommentResponse

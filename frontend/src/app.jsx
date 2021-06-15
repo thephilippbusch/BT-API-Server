@@ -7,14 +7,15 @@ import {
 } from 'react-router-dom'
 import './styles/extend.css'
 
-import Header from './components/header'
 import LoadHome from './loader/loadHome'
 import LoadPost from './loader/loadPost'
 import LoadProfile from './loader/loadProfile'
 import LoadSettings from './loader/loadSettings'
+import LoadSearch from './loader/loadSearch'
 
 import Login from './pages/login'
 import SignUp from './pages/signup'
+import Header from './components/header'
 
 import { AuthContext, CurrentUserContext } from './context'
 
@@ -61,6 +62,9 @@ const App = () => {
                   path="/post/:pid"
                   render={({ match }) => <LoadPost match={match} />}
                 />
+                <Route path="/search">
+                  <LoadSearch />
+                </Route>
                 {authToken && currentUser ? (
                   <Route path="/settings">
                     <LoadSettings />

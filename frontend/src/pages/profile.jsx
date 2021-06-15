@@ -52,7 +52,7 @@ const Profile = ({ data }) => {
     <main className="w-full h-full flex justify-center pt-16">
       <div className="w-full xl:w-1/2 h-full overflow-y-auto flex-col">
         <div className="flex flex-col items-center w-full py-10">
-          <ProfilePicture url={profileURL} size="16" pad="3" />
+          <ProfilePicture url={profileURL} size="16" pad="3" picture="24" />
           <div className="flex flex-row justify-center w-full font-bold pt-4">
             <p className="text-2xl">{data.name}</p>
           </div>

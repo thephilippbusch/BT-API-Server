@@ -75,7 +75,12 @@ const Post = ({ data }) => {
             className="flex flex-row items-center space-x-1 cursor-pointer"
             onClick={() => history.push(`/profile/${user.id}`)}
           >
-            <ProfilePicture url={user.profile_picture} size="4" pad="1" />
+            <ProfilePicture
+              url={user.profile_picture}
+              size="4"
+              pad="1"
+              picture="6"
+            />
             <p className="text-gray-600 text-xs font-bold hover:underline">
               {user.name}
             </p>

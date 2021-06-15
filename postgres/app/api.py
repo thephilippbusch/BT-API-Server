@@ -18,9 +18,9 @@ async def get_post(id: str):
     res = PostManager.get_post(id)
     return res
 
-@app.get('/posts/get_posts', tags=['Posts'])
-async def get_posts(uid: str = None):
-    res = PostManager.get_posts(uid)
+@app.get('/posts/get_posts_by_uid', tags=['Posts'])
+async def get_posts_by_uid(uid: str = None):
+    res = PostManager.get_posts_by_uid(uid)
     return res
 
 @app.get('/posts/get_latest_posts', tags=['Posts'])

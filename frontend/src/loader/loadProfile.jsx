@@ -71,8 +71,6 @@ const LoadProfile = ({ match }) => {
           PUBLIC_API_KEY
         )
 
-        console.log(postResult)
-
         if (!postResult) {
           setData({ fetched: null, isFetching: false })
           return
@@ -91,8 +89,6 @@ const LoadProfile = ({ match }) => {
           setData({ fetched: null, isFetching: false })
           return
         }
-
-        console.log(result)
 
         setData({ fetched: result, isFetching: false })
       } catch (e) {

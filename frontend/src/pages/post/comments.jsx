@@ -81,7 +81,12 @@ const Comment = ({ id, content, created, user, deleteComment }) => {
           className="flex justify-start items-center space-x-1 cursor-pointer"
           onClick={() => history.push(`/profile/${user.id}`)}
         >
-          <ProfilePicture url={user.profile_picture} size="3" pad="1" />
+          <ProfilePicture
+            url={user.profile_picture}
+            size="3"
+            pad="1"
+            picture="5"
+          />
           <div className="text-gray-600 text-xs font-bold hover:underline">
             {user.name}
           </div>
