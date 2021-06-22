@@ -14,6 +14,8 @@ from .postgres.comment_resolver import CommentQueries, CommentMutations
 from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT
 
+from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
+
 POSTGRES_URL = config("postgres_url")
 POSTGRES_TOKEN = config("postgres_token")
 
@@ -27,6 +29,19 @@ app.add_middleware(
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"]
+)
+
+apm_config = {
+ 'SERVICE_NAME': 'BloggerGateway',
+ 'SERVER_URL': 'http://localhost:8200',
+ 'ENVIRONMENT': 'dev',
+ 'GLOBAL_LABELS': 'platform=BloggerGatewayPlatform, application=BloggerGatewayApplication'
+}
+apm_client = make_apm_client(apm_config)
+
+app.add_middleware(
+  ElasticAPM,
+  client=apm_client
 )
 
 @app.get("/auth/signup", tags=['Authentication'])

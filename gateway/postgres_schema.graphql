@@ -3,6 +3,14 @@ schema {
   mutation: Mutation
 }
 
+type User {
+  id: ID!
+  mail: String!
+  name: String!
+  password: String!
+  profile_picture: String
+}
+
 type Post {
   id: ID!
   title: String!
@@ -17,14 +25,6 @@ type Comment {
   user: User!
   post: Post!
   created: String!
-}
-
-type User {
-  id: ID!
-  mail: String!
-  name: String!
-  password: String!
-  profile_picture: String
 }
 
 type UserResponse {
