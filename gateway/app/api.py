@@ -1,27 +1,38 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, WebSocket
+from fastapi.exceptions import HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from ariadne import ObjectType, load_schema_from_path, make_executable_schema
 from ariadne.asgi import GraphQL
+from fastapi.params import Depends
+from starlette.responses import JSONResponse
+from starlette.status import HTTP_401_UNAUTHORIZED
 
 from decouple import config
-import requests
+import requests, json
 
 from .postgres.post_resolver import PostQueries, PostMutations
 from .postgres.user_resolver import UserQueries, UserMutations
 from .postgres.comment_resolver import CommentQueries, CommentMutations
 
-from .auth.auth_bearer import JWTBearer
 from .auth.auth_handler import signJWT
+from .auth.auth_bearer import JWTBearer
+
+from .mongo.connection_handler import ConnectionHandler
 
 from elasticapm.contrib.starlette import make_apm_client, ElasticAPM
 
 POSTGRES_URL = config("postgres_url")
 POSTGRES_TOKEN = config("postgres_token")
+MONGO_URL = config("mongo_url")
+MONGO_TOKEN = config("mongo_token")
 
 postgres_header = {"token": POSTGRES_TOKEN}
+mongo_header = {"token": MONGO_TOKEN}
 
 app = FastAPI()
+
+handler = ConnectionHandler()
 
 app.add_middleware(
     CORSMiddleware,
@@ -96,6 +107,112 @@ async def sign_in(email: str, password: str):
 
     except Exception as e:
         print(e)
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.websocket("/blogger_chat/{channel}")
+async def blogger_chat(ws: WebSocket, channel: str):
+    try:
+        token = ws.headers["Authentication"][7:]
+        is_valid = JWTBearer.verify_jwt(JWTBearer, token)
+        if not is_valid:
+            return JSONResponse(status_code=401)
+
+        await handler.connect(ws, channel)
+
+        while True:
+            data = await ws.receive_json()
+            print(data)
+
+            req_url = f"{MONGO_URL}add_message_to_forum"
+
+            res = requests.post(req_url, params=data, headers = mongo_header)
+            result = res.json()
+
+            if not result["success"]:
+                e = result["error"]
+                print(f"Error: {e}")
+
+            if data and result["success"]:
+                data["_id"] = result["id"]
+                await handler.send_to_room(data, channel)
+        
+    except Exception as e:
+        print(f"Exception: {str(e)}")
+
+@app.get("/forums/get_forums", tags=["Messaging Service"], dependencies=[Depends(JWTBearer())])
+async def get_forums(name: str = None):
+    try:
+        url_path = f"{MONGO_URL}get_forums"
+        payload = {}
+        if name:
+            payload = {"name": name}
+        
+        res = requests.get(url_path, params=payload, headers=mongo_header)
+        result = res.json()
+
+        return result
+    except Exception as e:
+        print(str(e))
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.post("/forums/create_forum", tags=["Messaging Service"], dependencies=[Depends(JWTBearer())])
+async def create_forum(name: str, user_id: str, description: str = None):
+    try:
+        url_path = f"{MONGO_URL}create_forum"
+        payload = {
+            "name": name,
+            "user_id": user_id,
+            "description": description
+        }
+        
+        res = requests.post(url_path, params=payload, headers=mongo_header)
+        result = res.json()
+
+        return result
+    except Exception as e:
+        print(str(e))
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.delete("/forums/delete_forum", tags=["Messaging Service"], dependencies=[Depends(JWTBearer())])
+async def delete_forum(forum_id: str):
+    try:
+        url_path = f"{MONGO_URL}delete_forum"
+        payload = {
+            "forum_id": forum_id
+        }
+        
+        res = requests.delete(url_path, params=payload, headers=mongo_header)
+        result = res.json()
+
+        return result
+    except Exception as e:
+        print(str(e))
+        return {
+            "success": False,
+            "error": str(e)
+        }
+
+@app.get("/messages/get_messages_by_forum", tags=["Messaging Service"], dependencies=[Depends(JWTBearer())])
+async def get_messages_by_forum(forum_id: str):
+    try:
+        url_path = f"{MONGO_URL}get_messages_by_forum"
+        payload = {"forum_id": forum_id}
+        
+        res = requests.get(url_path, params=payload, headers=mongo_header)
+        result = res.json()
+
+        return result
+    except Exception as e:
+        print(str(e))
         return {
             "success": False,
             "error": str(e)

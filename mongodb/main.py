@@ -1,8 +1,8 @@
-from decouple import config
 import uvicorn
+from decouple import config
 
-PORT = config("port")
 HOST = config("host")
+PORT = config("port")
 DEBUG = config("debug")
 
 if __name__ == "__main__":

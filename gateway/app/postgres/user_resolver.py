@@ -13,8 +13,6 @@ class UserQueries:
     def get_user(obj, info, id: str = None, mail: str = None):
         try:
             token = info.context["request"].headers["Authentication"][7:]
-            print(token)
-            print(PUBLIC_KEY)
             if token == PUBLIC_KEY:
                 if id is not None:
                     req_url = f"{POSTGRES_URL}users/get_user?id={id}"
@@ -29,7 +27,6 @@ class UserQueries:
                 "error": "Invalid api key"
             }
         except Exception as e:
-            print(f"queries-25: {e}")
             return {
                 "success": False,
                 "error": str(e)
